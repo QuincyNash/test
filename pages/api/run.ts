@@ -10,7 +10,7 @@ export default function handler(
 	res: NextApiResponse<Data>
 ) {
 	return new Promise(async () => {
-		const ls = spawn("python3", ["--version"]);
+		const ls = spawn("python", ["--version"]);
 
 		ls.stdout.on("data", (data) => {
 			return res.status(200).json({ message: data.toString() });
