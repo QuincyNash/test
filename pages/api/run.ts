@@ -30,7 +30,9 @@ export default function handler(
 
 	return new Promise(async () => {
 		// const ls = spawn("python3", [filePath]);
-		const ls = spawn(command, args);
+		const ls = spawn(command, args, {
+			shell: true,
+		});
 
 		ls.stdout.on("data", (data) => {
 			console.log(data.toString());
