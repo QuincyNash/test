@@ -23,7 +23,7 @@ export default function handler(
 
 	// writeFileSync(filePath, code);
 
-	// console.log(filePath);
+	// // console.log(filePath);
 
 	const command = code.split(" ")[0];
 	const args = code.split(" ").slice(1);
