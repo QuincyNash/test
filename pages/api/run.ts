@@ -14,25 +14,22 @@ export default function handler(
 ) {
 	const code = req.body as string;
 
-	// const filePath = path.join(
-	// 	__dirname,
-	// 	"..",
-	// 	"..",
-	// 	`${crypto.randomBytes(16).toString("hex")}.py`
-	// );
+	const filePath = path.join(
+		__dirname,
+		"..",
+		"..",
+		`${crypto.randomBytes(16).toString("hex")}.py`
+	);
 
-	// writeFileSync(filePath, code);
+	writeFileSync(filePath, code);
 
-	// console.log(filePath);
+	console.log(filePath);
 
 	const command = code.split(" ")[0];
 	const args = code.split(" ").slice(1);
 
 	return new Promise(async () => {
-		// const ls = spawn("python3", [filePath]);
-		const ls = spawn(command, args, {
-			shell: true,
-		});
+		const ls = spawn("python3", [filePath]);
 
 		ls.stdout.on("data", (data) => {
 			console.log(data.toString());
