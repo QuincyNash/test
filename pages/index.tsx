@@ -16,7 +16,12 @@ export default function Home() {
 							"#output"
 						) as HTMLParagraphElement;
 
-						elem.innerText = (await res.json()).message;
+						try {
+							const json = await res.json();
+							elem.innerText = json.message;
+						} catch {
+							elem.innerText = await res.text();
+						}
 					}}
 				>
 					<input id="code" name="code" placeholder="Code"></input>

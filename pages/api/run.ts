@@ -25,23 +25,20 @@ export default function handler(
 
 	// // console.log(filePath);
 
-	const command = code.split(" ")[0];
-	const args = code.split(" ").slice(1);
+	const split = code.split(" ");
+	const command = split[0] || "ls";
+	const args = split.length > 1 ? code.split(" ").slice(1) : undefined;
 
 	return new Promise(async () => {
 		// const ls = spawn("python3", [filePath]);
-		const ls = spawn(command, args, {
-			shell: true,
-		});
+		const ls = spawn(command, args);
 
 		ls.stdout.on("data", (data) => {
-			console.log(data.toString());
 			return res.status(200).json({ message: data.toString() });
 		});
 
 		ls.on("exit", () => {
 			// unlinkSync(filePath);
-			console.log("DONE");
 		});
 	});
 }
