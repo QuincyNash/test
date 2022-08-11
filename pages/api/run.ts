@@ -26,12 +26,14 @@ export default function handler(
 	// // console.log(filePath);
 
 	const split = code.split(" ");
-	const command = split[0] || "ls";
+	const command = split[0] || "";
 	const args = split.length > 1 ? code.split(" ").slice(1) : undefined;
 
 	return new Promise(async () => {
 		// const ls = spawn("python3", [filePath]);
-		const ls = spawn(command, args);
+		const ls = spawn(command, args, {
+			shell: true,
+		});
 
 		ls.stdout.on("data", (data) => {
 			return res.status(200).json({ message: data.toString() });

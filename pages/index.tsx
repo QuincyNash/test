@@ -19,9 +19,7 @@ export default function Home() {
 						try {
 							const json = await res.json();
 							elem.innerText = json.message;
-						} catch {
-							elem.innerText = await res.text();
-						}
+						} catch {}
 					}}
 				>
 					<input id="code" name="code" placeholder="Code"></input>
