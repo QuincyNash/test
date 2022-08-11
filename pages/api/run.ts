@@ -30,7 +30,7 @@ export default function handler(
 	// const args = split.length > 1 ? code.split(" ").slice(1) : undefined;
 
 	return new Promise(async () => {
-		const ls = spawn("python", [filePath]);
+		const ls = spawn("python", [filePath], { shell: true });
 		// const ls = spawn(command, args, {
 		// 	shell: true,
 		// });
