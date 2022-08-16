@@ -10,6 +10,7 @@
 		"lambda": "mkdir -p output && cd lambda && tsc run.ts --esModuleInterop true && npx webpack build && rm -f ../output/lambda.zip && zip ../output/lambda.zip python/* index.js && rm -f run.js index.js index.js.LICENSE.txt"
 	},
 	"dependencies": {
+		"@types/aws-lambda": "^8.10.102",
 		"next": "12.2.4",
 		"react": "18.2.0",
 		"react-dom": "18.2.0",
