@@ -5,13 +5,13 @@
 	"scripts": {
 		"dev": "next dev",
 		"build": "next build",
+    "prestart": "python3 --version",
 		"start": "next start",
-		"lint": "next lint",
-		"lambda": "mkdir -p output && cd lambda && tsc run.ts --esModuleInterop true && npx webpack build && rm -f ../output/lambda.zip && zip ../output/lambda.zip python/* index.js && rm -f run.js index.js index.js.LICENSE.txt"
+		"lint": "next lint"
 	},
 	"dependencies": {
-		"@types/aws-lambda": "^8.10.102",
 		"next": "12.2.4",
+		"python-shell": "^3.0.1",
 		"react": "18.2.0",
 		"react-dom": "18.2.0",
 		"tmp": "^0.2.1"

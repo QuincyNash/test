@@ -19,10 +19,11 @@ export default function Home() {
 						try {
 							const json = await res.json();
 							elem.innerText = json.message;
+							console.log(json.message);
 						} catch {}
 					}}
 				>
-					<input id="code" name="code" placeholder="Code"></input>
+					<textarea id="code" name="code" placeholder="Code"></textarea>
 					<button type="submit">Submit</button>
 				</form>
 				<p id="output"></p>
