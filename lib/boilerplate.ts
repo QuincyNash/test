@@ -1,6 +1,5 @@
 const boilerplate = `def starter():
     import sys
-    import 
     from threading import Thread
 
     def respond():
@@ -10,7 +9,6 @@ const boilerplate = `def starter():
     thread = Thread(target=respond)
     thread.daemon = True
     thread.start()
-
 
 starter()`;
 

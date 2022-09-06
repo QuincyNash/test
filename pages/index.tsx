@@ -1,6 +1,11 @@
 import Pusher from "pusher-js";
-import cloneDeep from "clone-deep";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
+import p5Types from "p5";
+import { Update } from "./api/run";
+import P5Sketch, { Setup, Draw } from "../components/P5Sketch";
+import { render } from "../lib/renderer";
+import io from "socket.io-client";
+import RunButton from "../components/RunButton";
 
 interface Output {
 	type: "stdout" | "exit";
@@ -10,16 +15,25 @@ interface Output {
 	chunk?: boolean;
 }
 
-let outputs: Array<Output> = [];
+export interface Object {
+	id: string;
+	points: { x: number; y: number }[];
+	color: { r: number; g: number; b: number };
+}
 
-function insert(array: Output[], value: Output) {
+let outputs: (Output | Update)[] = [];
+let objects: Object[] = [];
+
+function insert(array: (Output | Update)[], value: Output | Update): void {
 	array.push(value);
 	array.sort((a, b) => b.counter - a.counter);
 }
 
 export default function Home() {
 	const [channel, setChannel] = useState<string | null>(null);
-	const [running, setRunning] = useState(false);
+	const [setup, setSetup] = useState<Setup>((p5) => {});
+	const [draw, setDraw] = useState<Draw>((p5) => {});
+	const [stoppable, setStoppable] = useState(true);
 
 	useEffect(() => {
 		(async () => {
@@ -39,6 +53,9 @@ export default function Home() {
 			});
 
 			if (channel) {
+				await fetch("/api/run");
+				const socket = io();
+
 				const subscribed = pusher.subscribe(channel);
 				subscribed.bind("stdout", (data: any) => {
 					insert(outputs, {
@@ -49,6 +66,11 @@ export default function Home() {
 						chunk: data.chunk,
 					});
 				});
+				subscribed.bind("updates", (data: Update[]) => {
+					for (let update of data) {
+						insert(outputs, update);
+					}
+				});
 			}
 		})();
 	}, [channel]);
@@ -56,91 +78,135 @@ export default function Home() {
 	return (
 		<>
 			<div>
-				<form
-					onClick={async (e) => {
-						function displayUpdates() {
-							abc += 1;
-							const currentTime = Date.now();
-							let stop = false;
+				<div className="flex">
+					<textarea
+						className="border border-blue-600 rounded-md"
+						style={{ resize: "both" }}
+						id="code"
+						name="code"
+						placeholder="Code"
+					></textarea>
+					<RunButton
+						onRun={async () => {
+							function displayUpdates(): void {
+								const currentTime = Date.now();
+								let stop = false;
 
-							for (let i = outputs.length - 1; i >= 0; i--) {
-								const output = outputs[i];
+								for (let i = outputs.length - 1; i >= 0; i--) {
+									let output = outputs[i] as any;
 
-								if (
-									output.timestamp + MESSAGE_DELAY <= currentTime &&
-									output.counter === counter
-								) {
-									if (output.type === "stdout") {
-										const elem = document.querySelector(
-											"#output"
-										) as HTMLParagraphElement;
+									if (
+										output.timestamp + MESSAGE_DELAY <= currentTime &&
+										output.counter === counter
+									) {
+										if (output.type === "stdout") {
+											const elem = document.querySelector(
+												"#output"
+											) as HTMLParagraphElement;
 
-										if (!output.chunk && elem.innerText !== "") {
-											elem.innerText += "\n" + output.data;
-										} else {
-											elem.innerText += output.data;
+											if (!output.chunk && elem.innerText !== "") {
+												elem.innerText += "\n" + output.data;
+											} else {
+												elem.innerText += output.data;
+											}
+										} else if (output.type === "exit") {
+											stop = true;
+										} else if (
+											(output.type === "2d" || output.type === "3d") &&
+											output.size
+										) {
+											setSetup(() => (p5: p5Types) => {
+												p5.createCanvas(
+													output.size.x,
+													output.size.y,
+													output.type === "3d" ? p5.WEBGL : p5.P2D
+												);
+											});
+											setDraw(() => (p5: p5Types) => {
+												p5.background(255);
+												for (let object of objects) {
+													render(p5, object);
+												}
+											});
+										} else if (output.type === "2d") {
+											let index = objects.findIndex((o) => o.id == output.id);
+											if (index !== -1) {
+												objects.splice(index, 1);
+											}
+
+											objects.push({
+												id: output.id,
+												points: output.points,
+												color: output.color,
+											});
+										} else if (output.type === "3d") {
+											objects.push({
+												id: output.id,
+												points: output.points,
+												color: output.color,
+											});
 										}
-									} else if (output.type === "exit") {
-										stop = true;
+										counter++;
+										outputs.splice(i, 1);
 									}
-									counter++;
-									outputs.splice(i, 1);
+								}
+								if (stop) {
+									outputs = [];
+									counter = 0;
+								} else {
+									requestAnimationFrame(displayUpdates);
 								}
 							}
-							if (stop) {
-								stopProgram();
-							} else {
-								requestAnimationFrame(displayUpdates);
-							}
-						}
 
-						function stopProgram() {
-							setRunning(false);
-							outputs = [];
-							counter = 0;
-						}
+							setStoppable(false);
+							setTimeout(() => {
+								setStoppable(true);
+							}, 1);
 
-						e.preventDefault();
+							objects = [];
 
-						if (running) return;
-						setRunning(true);
+							const MESSAGE_DELAY = 200; // Milliseconds
+							let counter = 0;
 
-						const MESSAGE_DELAY = 200; // Milliseconds
-						let counter = 0;
-						let abc = 0;
+							requestAnimationFrame(displayUpdates);
 
-						requestAnimationFrame(displayUpdates);
+							const elem = document.querySelector(
+								"#output"
+							) as HTMLParagraphElement;
+							elem.innerText = "";
 
-						const elem = document.querySelector(
-							"#output"
-						) as HTMLParagraphElement;
-						elem.innerText = "";
-
-						const res = await fetch("api/run", {
-							method: "POST",
-							body: JSON.stringify({
-								code: (document.querySelector("#code") as HTMLInputElement)
-									.value,
-								channel,
-							}),
-						});
-						const json = await res.json();
-
-						if (json.message === "Invalid Request") {
-							stopProgram();
-						} else {
-							insert(outputs, {
-								type: "exit",
-								data: "Success",
-								timestamp: Date.now(),
-								counter: json.counter,
+							const res = await fetch("api/run", {
+								method: "POST",
+								body: JSON.stringify({
+									code: (document.querySelector("#code") as HTMLInputElement)
+										.value,
+									channel,
+								}),
 							});
-						}
-					}}
-				>
-					<textarea id="code" name="code" placeholder="Code"></textarea>
-					<button type="submit">Submit</button>
-				</form>
+							const json = await res.json();
+
+							if (json.message === "Invalid Request") {
+								outputs = [];
+								counter = 0;
+							} else {
+								insert(outputs, {
+									type: "exit",
+									data: "Success",
+									timestamp: Date.now(),
+									counter: json.counter,
+								});
+							}
+						}}
+						onStop={() => {
+							outputs = [];
+							objects = [];
+							setSetup(() => () => {});
+							setDraw(() => () => {});
+						}}
+						stoppable={stoppable}
+					></RunButton>
+				</div>
+				<P5Sketch setup={setup} draw={draw}></P5Sketch>
 				<p id="output"></p>
 			</div>
 		</>

@@ -1,6 +1,6 @@
 import admin from "firebase-admin";
 
-export default function initialize() {
+export default function initialize(): void {
 	if (admin.apps.length === 0) {
 		admin.initializeApp({
 			credential: admin.credential.cert({
