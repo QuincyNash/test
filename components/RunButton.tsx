@@ -1,29 +1,30 @@
 import { useState } from "react";
 
 interface RunButtonProps {
-	onRun: () => void;
-	onStop: () => void;
-	stoppable: boolean;
+	onRun: () => Promise<void>;
+	onStop: () => Promise<void>;
+	running: "yes" | "no" | "starting";
 }
 
 export default function RunButton(props: RunButtonProps) {
-	const [running, setRunning] = useState(false);
+	let displayMap = {
+		yes: "Stop",
+		no: "Run",
+		starting: "Starting",
+	};
 
 	return (
 		<button
-			className="w-16 h-fit p-2 bg-gray-300 rounded-md"
+			className="w-32 h-12 p-2 bg-gray-300 rounded-md"
 			onClick={async () => {
-				if (props.stoppable) {
-					if (running) {
-						await props.onStop();
-					} else {
-						await props.onRun();
-					}
-					setRunning(!running);
+				if (props.running === "yes") {
+					await props.onStop();
+				} else if (props.running === "no") {
+					await props.onRun();
 				}
 			}}
 		>
-			{running ? "Stop" : "Run"}
+			{displayMap[props.running]}
 		</button>
 	);
 }
