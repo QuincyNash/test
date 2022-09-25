@@ -7,6 +7,8 @@ import { render, sendEvent } from "../lib/renderer";
 import io, { Socket } from "socket.io-client";
 import RunButton from "../components/RunButton";
 import Editor from "../components/Editor";
+import SidePanel from "../components/SidePanel";
+import Header from "../components/Header";
 
 export interface Scene {
 	width: number;
@@ -312,24 +314,25 @@ export default function Home() {
 	}
 
 	return (
-		<>
-			<div>
-				<div className="flex">
-					<Editor
-						default={code}
-						onChange={(value) => {
-							code = value;
-						}}
-					></Editor>
-					<RunButton
-						onRun={onRun}
-						onStop={onStop}
-						running={running}
-					></RunButton>
-				</div>
+		<div className="flex flex-col w-screen h-screen">
+			<Header onRun={onRun} onStop={onStop} running={running}></Header>
+			<main className="grow-0 shrink flex min-h-full p-2 overflow-auto bg-black">
+				<SidePanel></SidePanel>
+				<Divider></Divider>
+				<Editor
+					default={code}
+					onChange={(value) => {
+						code = value;
+					}}
+				></Editor>
+				<Divider></Divider>
 				<P5Sketch sketch={sketch}></P5Sketch>
 				<p id="output"></p>
-			</div>
-		</>
+			</main>
+		</div>
 	);
+}
+
+function Divider() {
+	return <div className="cursor-ew-resize w-2"></div>;
 }

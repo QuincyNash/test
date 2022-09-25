@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body {
+	overscroll-behavior-x: none;
+}
+
+.cm-focused {
+	outline: none !important;
+}
+
 body {
 	padding: 0;
 	margin: 0;

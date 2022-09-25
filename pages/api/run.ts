@@ -168,7 +168,6 @@ export default function handler(
 							}
 
 							cpuUsage += stats.cpu;
-							console.log(Object.keys(instances));
 							console.log(stats.cpu, cpuUsage, timesPastLimit);
 
 							if (stats.cpu > MAX_CPU_PER_SECOND) {

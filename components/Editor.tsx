@@ -10,14 +10,15 @@ interface EditorProps {
 
 export default function Editor(props: EditorProps) {
 	return (
-		<CodeMirror
-			className="w-1/2"
-			height={"320px"}
-			value={props.default}
-			theme={githubLight}
-			extensions={[langs.python()]}
-			onChange={props.onChange}
-			onContextMenu={(e) => e.preventDefault()}
-		></CodeMirror>
+		<div className="grow-0 shrink w-1/2 h-full overflow-auto bg-white rounded-md">
+			<CodeMirror
+				value={props.default}
+				height={"100%"}
+				theme={githubLight}
+				extensions={[langs.python()]}
+				onChange={props.onChange}
+				onContextMenu={(e) => e.preventDefault()}
+			></CodeMirror>
+		</div>
 	);
 }
