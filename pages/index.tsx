@@ -5,7 +5,6 @@ import { Update } from "./api/run";
 import P5Sketch, { Sketch } from "../components/P5Sketch";
 import { render, sendEvent } from "../lib/renderer";
 import io, { Socket } from "socket.io-client";
-import RunButton from "../components/RunButton";
 import Editor from "../components/Editor";
 import SidePanel from "../components/SidePanel";
 import Header from "../components/Header";
@@ -92,7 +91,11 @@ export default function Home() {
 	const [running, setRunning] = useState<"yes" | "no" | "starting">("no");
 
 	const createSocket = useCallback(async () => {
-		const newSocket = io("http://localhost:3000");
+		const newSocket = io(
+			process.env.NODE_ENV === "development"
+				? "http://localhost:3000"
+				: "https://main.d1q6bneobbhjda.amplifyapp.com"
+		);
 
 		newSocket.on("stdout", (data: any) => {
 			insert(outputs, {
