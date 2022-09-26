@@ -94,7 +94,7 @@ export default function Home() {
 		const newSocket = io(
 			process.env.NODE_ENV === "development"
 				? "http://localhost:3000"
-				: "https://main.d1q6bneobbhjda.amplifyapp.com"
+				: "https://d2yw7c9b0o6yg5.cloudfront.net"
 		);
 
 		newSocket.on("stdout", (data: any) => {
